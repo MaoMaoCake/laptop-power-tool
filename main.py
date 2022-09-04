@@ -31,11 +31,11 @@ def toggle_threads(start, end, state):
 
 
 @app.command()
-def disable_thread(start: int, end: int):
+def disable_cpu(start: int, end: int):
     """
-    Disables specified threads
-    :param start: starting Thread to disable
-    :param end: Ending Thread to disable
+    Disables specified CPUs
+    :param start: Starting CPU to disable
+    :param end: Ending CPU to disable
     """
     try:
         if start is None or end is None:
@@ -46,10 +46,10 @@ def disable_thread(start: int, end: int):
         # prevent the user from killing their own system
         # it should not be possible to set cpu0 to offline
         if start == 0:
-            print("You cannot disable Thread 0")
+            print("You cannot disable CPU 0")
         # check if the user passed in correct values
         elif start > 0 and end <= all_cpu:
-            print(f"Disabling cpu {start} to {end} from total of {all_cpu} Threads")
+            print(f"Disabling CPUs {start} to {end} from total of {all_cpu} CPUs")
             # actually start the command
             if typer.confirm("Are you sure you want to continue?", abort=True):
                 toggle_threads(start, end, 0)
@@ -66,20 +66,16 @@ def disable_thread(start: int, end: int):
 
 
 @app.command()
-def enable_thread(start: int, end: int):
+def enable_(start: int, end: int):
     try:
         if start is None or end is None:
             # this code should be unreachable as typer will error out first
             print("Start and End cannot be Empty")
         # get the total supported cpus of the installed device
         all_cpu = get_all_cpus()
-        # prevent the user from killing their own system
-        # it should not be possible to set cpu0 to offline
-        if start == 0:
-            print("You cannot disable Thread 0")
         # check if the user passed in correct values
-        elif start > 0 and end <= all_cpu:
-            print(f"Enabling cpu {start} to {end}")
+        if start > 0 and end <= all_cpu:
+            print(f"Enabling CPUs {start} to {end}")
             # actually start the command
             if typer.confirm("Are you sure you want to continue?", abort=True):
                 toggle_threads(start, end, 1)
