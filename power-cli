@@ -106,12 +106,17 @@ def disable_turbo():
     try:
         vendor = get_vendor()
         if vendor == "GenuineIntel":
-            print("This command will disable turbo boost for Intel CPUs")
-            if typer.confirm("Are you sure you want to continue"):
+            print("This command will disable turbo boost for Intel CPUs. This change resets on reboot")
+            if typer.confirm("Are you sure you want to continue", abort=True):
                 with open(f"/sys/devices/system/cpu/intel_pstate/no_turbo", "wb") as f:
-                    subprocess.Popen(["echo", 1], stdout=f)
+                    subprocess.Popen(["echo", "1"], stdout=f)
+        elif vendor == "AuthenticAMD":
+            print("This command will disable turbo boost for AMD CPUs. This change resets on reboot")
+            if typer.confirm("Are you sure you want to continue", abort=True):
+                with open(f"/sys/devices/system/cpu/cpufreq/boost", "wb") as f:
+                    subprocess.Popen(["echo", "1"], stdout=f)
         else:
-            print(f"This feature only works with Intel CPUs, You are currently using {vendor}")
+            print(f"This feature only works with Intel and AMD CPUs, You are currently using {vendor}")
     except PermissionError:
         print("You cannot modify your system as a non root account, please re-run this command with sudo")
 
@@ -122,9 +127,14 @@ def enable_turbo():
         vendor = get_vendor()
         if vendor == "GenuineIntel":
             print("This command will disable turbo boost for Intel CPUs")
-            if typer.confirm("Are you sure you want to continue"):
+            if typer.confirm("Are you sure you want to continue", abort=True):
                 with open(f"/sys/devices/system/cpu/intel_pstate/no_turbo", "wb") as f:
-                    subprocess.Popen(["echo", 0], stdout=f)
+                    subprocess.Popen(["echo", "0"], stdout=f)
+        elif vendor == "AuthenticAMD":
+            print("This command will disable turbo boost for AMD CPUs. This change resets on reboot")
+            if typer.confirm("Are you sure you want to continue", abort=True):
+                with open(f"/sys/devices/system/cpu/cpufreq/boost", "wb") as f:
+                    subprocess.Popen(["echo", "0"], stdout=f)
         else:
             print(f"This feature only works with Intel CPUs, You are currently using {vendor}")
     except PermissionError:
