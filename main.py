@@ -68,6 +68,38 @@ def disable_thread(start: int, end: int):
         print("You cannot modify your system as a non root account, please re-run this command with sudo")
 
 
+@app.command()
+def enable_thread(start: int, end: int):
+    try:
+        if start is None or end is None:
+            # this code should be unreachable as typer will error out first
+            print("Start and End cannot be Empty")
+        # get the total supported cpus of the installed device
+        all_cpu = get_all_cpus()
+        # prevent the user from killing their own system
+        # it should not be possible to set cpu0 to offline
+        if start == 0:
+            print("You cannot disable Thread 0")
+        # check if the user passed in correct values
+        elif start > 0 and end <= all_cpu:
+            print(f"Enabling cpu {start} to {end}")
+            # actually start the command
+            if typer.prompt("Are you sure you want to continue? [y/n]").upper() == "Y":
+                toggle_threads(start, end, 1)
+            else:
+                print("Operation Canceled")
+                return
+        # if the user tries to disable more CPUs than they have
+        elif end > all_cpu:
+            print("You cannot enable more CPUS than you have")
+        # sleep to let the system catch up to our changes
+        time.sleep(1)
+        # gets the new CPUs value
+        cur_cpu = get_current_cpus()
+        print(f"You now have {cur_cpu}/{all_cpu} CPUs")
+    except PermissionError:
+        print("You cannot modify your system as a non root account, please re-run this command with sudo")
+
 
 if __name__ == "__main__":
     app()
