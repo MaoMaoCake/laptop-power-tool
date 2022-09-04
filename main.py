@@ -22,7 +22,7 @@ def get_all_cpus():
                .get("lscpu")[4].get("data"))
 
 
-def toggle_threads(start, end, state):
+def toggle_cpus(start, end, state):
     # include the end
     for i in range(start, end):
         # state = 1 for enable 0 for disable
@@ -52,7 +52,7 @@ def disable_cpu(start: int, end: int):
             print(f"Disabling CPUs {start} to {end} from total of {all_cpu} CPUs")
             # actually start the command
             if typer.confirm("Are you sure you want to continue?", abort=True):
-                toggle_threads(start, end, 0)
+                toggle_cpus(start, end, 0)
         # if the user tries to disable more CPUs than they have
         elif end > all_cpu:
             print("You cannot disable more CPUS than you have")
@@ -66,7 +66,12 @@ def disable_cpu(start: int, end: int):
 
 
 @app.command()
-def enable_(start: int, end: int):
+def enable_cpu(start: int, end: int):
+    """
+    Enables specified CPUs
+    :param start: Starting CPU to enable
+    :param end: Ending CPU to enable
+    """
     try:
         if start is None or end is None:
             # this code should be unreachable as typer will error out first
@@ -78,7 +83,7 @@ def enable_(start: int, end: int):
             print(f"Enabling CPUs {start} to {end}")
             # actually start the command
             if typer.confirm("Are you sure you want to continue?", abort=True):
-                toggle_threads(start, end, 1)
+                toggle_cpus(start, end, 1)
         # if the user tries to disable more CPUs than they have
         elif end > all_cpu:
             print("You cannot enable more CPUS than you have")
