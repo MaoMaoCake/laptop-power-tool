@@ -51,11 +51,8 @@ def disable_thread(start: int, end: int):
         elif start > 0 and end <= all_cpu:
             print(f"Disabling cpu {start} to {end} from total of {all_cpu} Threads")
             # actually start the command
-            if typer.prompt("Are you sure you want to continue? [y/n]").upper() == "Y":
+            if typer.confirm("Are you sure you want to continue?", abort=True):
                 toggle_threads(start, end, 0)
-            else:
-                print("Operation Canceled")
-                return
         # if the user tries to disable more CPUs than they have
         elif end > all_cpu:
             print("You cannot disable more CPUS than you have")
@@ -84,11 +81,8 @@ def enable_thread(start: int, end: int):
         elif start > 0 and end <= all_cpu:
             print(f"Enabling cpu {start} to {end}")
             # actually start the command
-            if typer.prompt("Are you sure you want to continue? [y/n]").upper() == "Y":
+            if typer.confirm("Are you sure you want to continue?", abort=True):
                 toggle_threads(start, end, 1)
-            else:
-                print("Operation Canceled")
-                return
         # if the user tries to disable more CPUs than they have
         elif end > all_cpu:
             print("You cannot enable more CPUS than you have")
