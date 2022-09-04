@@ -16,6 +16,11 @@ def get_current_cpus():
     return int(subprocess.Popen(["nproc"], stdout=subprocess.PIPE).communicate()[0])
 
 
+def get_vendor():
+    return str(json.loads(subprocess.Popen(["lscpu", "-J"], stdout=subprocess.PIPE).communicate()[0].decode("UTF-8)"))
+               .get("lscpu")[10].get("data"))
+
+
 def get_all_cpus():
     # use the native lscpu function to get core data of system
     return int(json.loads(subprocess.Popen(["lscpu", "-J"], stdout=subprocess.PIPE).communicate()[0].decode("UTF-8)"))
@@ -92,6 +97,36 @@ def enable_cpu(start: int, end: int):
         # gets the new CPUs value
         cur_cpu = get_current_cpus()
         print(f"You now have {cur_cpu}/{all_cpu} CPUs")
+    except PermissionError:
+        print("You cannot modify your system as a non root account, please re-run this command with sudo")
+
+
+@app.command()
+def disable_turbo():
+    try:
+        vendor = get_vendor()
+        if vendor == "GenuineIntel":
+            print("This command will disable turbo boost for Intel CPUs")
+            if typer.confirm("Are you sure you want to continue"):
+                with open(f"/sys/devices/system/cpu/intel_pstate/no_turbo", "wb") as f:
+                    subprocess.Popen(["echo", 1], stdout=f)
+        else:
+            print(f"This feature only works with Intel CPUs, You are currently using {vendor}")
+    except PermissionError:
+        print("You cannot modify your system as a non root account, please re-run this command with sudo")
+
+
+@app.command()
+def enable_turbo():
+    try:
+        vendor = get_vendor()
+        if vendor == "GenuineIntel":
+            print("This command will disable turbo boost for Intel CPUs")
+            if typer.confirm("Are you sure you want to continue"):
+                with open(f"/sys/devices/system/cpu/intel_pstate/no_turbo", "wb") as f:
+                    subprocess.Popen(["echo", 0], stdout=f)
+        else:
+            print(f"This feature only works with Intel CPUs, You are currently using {vendor}")
     except PermissionError:
         print("You cannot modify your system as a non root account, please re-run this command with sudo")
 
