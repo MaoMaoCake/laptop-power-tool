@@ -5,6 +5,8 @@ import time
 import json
 import subprocess
 
+from typing import Optional
+
 # imports that require extra installation
 import typer
 
@@ -33,6 +35,12 @@ def toggle_cpus(start, end, state):
         # state = 1 for enable 0 for disable
         with open(f"/sys/devices/system/cpu/cpu{i}/online", "wb") as f:
             subprocess.Popen(["echo", str(state)], stdout=f)
+
+
+def set_core_mode(mode, start, end):
+    for i in range(start, end):
+        with open("/sys/devices/system/cpu/cpu{0}/cpufreq/scaling_governor".format(i), "w") as f:
+            f.write(str(mode))
 
 
 @app.command()
@@ -137,6 +145,31 @@ def enable_turbo():
                     subprocess.Popen(["echo", "0"], stdout=f)
         else:
             print(f"This feature only works with Intel CPUs, You are currently using {vendor}")
+    except PermissionError:
+        print("You cannot modify your system as a non root account, please re-run this command with sudo")
+
+
+@app.command()
+def set_cpu(mode: str, start: Optional[int] = typer.Argument(None), end: Optional[int] = typer.Argument(None)):
+    try:
+        allowed = ["performance", "ondemand", "powersave","conservative"]
+        if mode not in allowed:
+            print("Please enter a valid mode")
+            return
+        total_cores = get_all_cpus()
+        if start is None and end is None:
+            # set the core mode to all cores
+            set_core_mode(mode, 0, total_cores)
+            print(f"Changed core modes to {mode} for all cores ")
+        # if start is the only one provided
+        elif start is not None and end is None:
+            if 0 <= start < total_cores:
+                set_core_mode(mode, start, start)
+                print(f"Changed core modes to {mode} for core {start} ")
+        elif start is not None and end is not None:
+            if 0 < start <= end and start <= end <= total_cores :
+                set_core_mode(mode, start, end)
+                print(f"Changed core modes to {mode} for cores {start} to {end} ")
     except PermissionError:
         print("You cannot modify your system as a non root account, please re-run this command with sudo")
 
